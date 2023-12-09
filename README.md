@@ -1,6 +1,9 @@
 # tento_app
 
-A new Flutter project.
+App para marcar tento um pouco diferenciado.
+Já existe a versão para android em APK no package APK.
+Pra buildar o app tenha o flutter instalado
+- flutter build apk
 
 ## Getting Started
 
