@@ -3,9 +3,22 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:audio_session/audio_session.dart' as audio_session;
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final session = await audio_session.AudioSession.instance;
+  await session.configure(const audio_session.AudioSessionConfiguration(
+    avAudioSessionCategory: audio_session.AVAudioSessionCategory.playAndRecord,
+    avAudioSessionCategoryOptions:
+        audio_session.AVAudioSessionCategoryOptions.mixWithOthers,
+    avAudioSessionMode: audio_session.AVAudioSessionMode.defaultMode,
+    avAudioSessionRouteSharingPolicy:
+        audio_session.AVAudioSessionRouteSharingPolicy.defaultPolicy,
+    avAudioSessionSetActiveOptions:
+        audio_session.AVAudioSessionSetActiveOptions.none,
+  ));
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -15,7 +28,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Contador de Tentos',
-      debugShowCheckedModeBanner: false, 
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
@@ -38,6 +51,8 @@ class _MyHomePageState extends State<MyHomePage> {
   int _elesCounter = 0;
   File? _nosImage;
   File? _elesImage;
+  String _centralButtonText = 'TRUCO !!!';
+  bool _isTrucoVisible = false;
 
   final Random _random = Random();
 
@@ -51,6 +66,24 @@ class _MyHomePageState extends State<MyHomePage> {
       print('Error playing random truco sound: $error');
     });
   }
+
+  void _handleButtonPress(String buttonPressed) {
+  setState(() {
+    if (buttonPressed == 'CORRO ...') {
+      _isTrucoVisible = false;
+      _centralButtonText = 'TRUCO !!!';
+    } else if (buttonPressed == 'TRUCO !!!') {
+      _isTrucoVisible = true;
+    } else if (buttonPressed == 'SEIS !!!' && _centralButtonText == 'TRUCO !!!') {
+      _centralButtonText = 'SEIS !!!';
+    } else if (buttonPressed == 'NOVE !!!' && _centralButtonText == 'SEIS !!!') {
+      _centralButtonText = 'NOVE !!!';
+    } else if (buttonPressed == 'DOZE !!!' && _centralButtonText == 'NOVE !!!') {
+      _centralButtonText = 'DOZE !!!';
+      _isTrucoVisible = false; 
+    }
+  });
+}
 
   Future<void> _pickImage(bool isNos) async {
     final ImagePicker _picker = ImagePicker();
@@ -108,10 +141,10 @@ class _MyHomePageState extends State<MyHomePage> {
           onTap: () => _pickImage(isNos),
           child: CircleAvatar(
             backgroundColor:
-                Colors.grey[300], // Fundo cinza para o ícone da câmera
+                Colors.grey[300], 
             backgroundImage: teamImage != null
                 ? FileImage(teamImage)
-                : null, // Ícone da câmera preto
+                : null, 
             radius: 60,
             child: teamImage == null
                 ? const Icon(Icons.camera_alt, size: 60, color: Colors.black)
@@ -120,8 +153,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
         const SizedBox(height: 20),
         Container(
-          width:
-              90, // Aumentando a largura do Container (ajuste este valor conforme necessário)
+          width: 90,
           margin: const EdgeInsets.all(10),
           decoration: BoxDecoration(
             color: Colors.white,
@@ -131,29 +163,29 @@ class _MyHomePageState extends State<MyHomePage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
+              const SizedBox(height: 20),
               IconButton(
                 icon: CircleAvatar(
-                  backgroundColor: Colors.red, // Fundo vermelho para o ícone +
-                  child: Icon(Icons.add,
-                      size: 30, color: Colors.white), // Ícone + branco
+                  backgroundColor: Colors.red,
+                  child: Icon(Icons.add, size: 30, color: Colors.white),
                 ),
                 onPressed: () => _incrementCounter(isNos),
               ),
               Text(
                 '$score',
                 style: const TextStyle(
-                  fontSize: 48,
+                  fontSize: 60,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               IconButton(
                 icon: CircleAvatar(
-                  backgroundColor: Colors.black, // Fundo preto para o ícone -
-                  child: Icon(Icons.remove,
-                      size: 30, color: Colors.white), // Ícone - branco
+                  backgroundColor: Colors.black,
+                  child: Icon(Icons.remove, size: 30, color: Colors.white),
                 ),
                 onPressed: () => _decrementCounter(isNos),
               ),
+              const SizedBox(height: 20),
             ],
           ),
         ),
@@ -168,8 +200,7 @@ class _MyHomePageState extends State<MyHomePage> {
         backgroundColor: Colors.black,
         title: Center(
             child: Text(widget.title,
-                style: const TextStyle(
-                    color: Colors.white))), // Centralizando o título
+                style: const TextStyle(color: Colors.white))),
       ),
       body: Center(
         child: Row(
@@ -180,16 +211,36 @@ class _MyHomePageState extends State<MyHomePage> {
           ],
         ),
       ),
-      bottomNavigationBar: BottomAppBar(
-        color: Colors.black,
-        child: TextButton(
-          onPressed: _playRandomTrucoSound,
-          child: const Text('TRUCO!',
-              style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 30)), // Aumentando o texto "TRUCO!"
+    bottomNavigationBar: BottomAppBar(
+      color: Colors.black,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: <Widget>[
+          if (_isTrucoVisible || _centralButtonText != 'TRUCO !!!') 
+            _buildActionButton('CORRO ...'),
+          _buildActionButton(_centralButtonText), 
+          if (_isTrucoVisible && _centralButtonText != 'DOZE !!!')
+            _buildActionButton(_centralButtonText == 'TRUCO !!!' ? 'SEIS !!!' : _centralButtonText == 'SEIS !!!' ? 'NOVE !!!' : 'DOZE !!!'),
+        ],
         ),
       ),
     );
   }
+
+Widget _buildActionButton(String text) {
+  return ElevatedButton(
+    onPressed: () => _handleButtonPress(text),
+    child: Text(text,
+        style: TextStyle(
+            color: Colors.white,
+            fontSize: 30)), 
+    style: ElevatedButton.styleFrom(
+      primary: Colors.black, 
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20), 
+        side: BorderSide(color: Colors.white), 
+      ),
+    ),
+  );
+}
 }
