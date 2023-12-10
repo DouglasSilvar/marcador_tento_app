@@ -67,23 +67,67 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  void _playRandomSeisSound() {
+    int randomNumber = _random.nextInt(7) + 61;
+    _audioPlayer
+        .play(AssetSource('audios/$randomNumber.mp3'))
+        .catchError((error) {
+      print('Error playing random truco sound: $error');
+    });
+  }
+
+  void _playRandomNoveSound() {
+    int randomNumber = _random.nextInt(7) + 1;
+    _audioPlayer
+        .play(AssetSource('audios/$randomNumber.mp3'))
+        .catchError((error) {
+      print('Error playing random truco sound: $error');
+    });
+  }
+
+  void _playRandomDozeSound() {
+    int randomNumber = _random.nextInt(7) + 1;
+    _audioPlayer
+        .play(AssetSource('audios/$randomNumber.mp3'))
+        .catchError((error) {
+      print('Error playing random truco sound: $error');
+    });
+  }
+
+  void _playRandomCorroSound() {
+    int randomNumber = _random.nextInt(7) + 1;
+    _audioPlayer
+        .play(AssetSource('audios/$randomNumber.mp3'))
+        .catchError((error) {
+      print('Error playing random truco sound: $error');
+    });
+  }
+
   void _handleButtonPress(String buttonPressed) {
-  setState(() {
-    if (buttonPressed == 'CORRO ...') {
-      _isTrucoVisible = false;
-      _centralButtonText = 'TRUCO !!!';
-    } else if (buttonPressed == 'TRUCO !!!') {
-      _isTrucoVisible = true;
-    } else if (buttonPressed == 'SEIS !!!' && _centralButtonText == 'TRUCO !!!') {
-      _centralButtonText = 'SEIS !!!';
-    } else if (buttonPressed == 'NOVE !!!' && _centralButtonText == 'SEIS !!!') {
-      _centralButtonText = 'NOVE !!!';
-    } else if (buttonPressed == 'DOZE !!!' && _centralButtonText == 'NOVE !!!') {
-      _centralButtonText = 'DOZE !!!';
-      _isTrucoVisible = false; 
-    }
-  });
-}
+    setState(() {
+      if (buttonPressed == 'CORRO ...') {
+        _isTrucoVisible = false;
+        _centralButtonText = 'TRUCO !!!';
+      } else if (buttonPressed == 'TRUCO !!!') {
+        _playRandomTrucoSound();
+        _isTrucoVisible = true;
+      } else if (buttonPressed == 'SEIS !!!' &&
+          _centralButtonText == 'TRUCO !!!') {
+        _centralButtonText = 'SEIS !!!';
+        _playRandomSeisSound();
+      } else if (buttonPressed == 'SEIS !!!' &&
+          _centralButtonText == 'SEIS !!!') {
+        _playRandomSeisSound();
+      } else if (buttonPressed == 'NOVE !!!' &&
+          _centralButtonText == 'SEIS !!!') {
+        _centralButtonText = 'NOVE !!!';
+      } else if (buttonPressed == 'DOZE !!!' &&
+          _centralButtonText == 'NOVE !!!') {
+        _centralButtonText = 'DOZE !!!';
+        _isTrucoVisible = false;
+      }
+    });
+  }
 
   Future<void> _pickImage(bool isNos) async {
     final ImagePicker _picker = ImagePicker();
@@ -134,17 +178,14 @@ class _MyHomePageState extends State<MyHomePage> {
       children: <Widget>[
         Text(
           teamName,
-          style: const TextStyle(fontSize: 60, fontWeight: FontWeight.bold),
+          style: const TextStyle(fontSize: 50, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 20),
         GestureDetector(
           onTap: () => _pickImage(isNos),
           child: CircleAvatar(
-            backgroundColor:
-                Colors.grey[300], 
-            backgroundImage: teamImage != null
-                ? FileImage(teamImage)
-                : null, 
+            backgroundColor: Colors.grey[300],
+            backgroundImage: teamImage != null ? FileImage(teamImage) : null,
             radius: 60,
             child: teamImage == null
                 ? const Icon(Icons.camera_alt, size: 60, color: Colors.black)
@@ -211,36 +252,37 @@ class _MyHomePageState extends State<MyHomePage> {
           ],
         ),
       ),
-    bottomNavigationBar: BottomAppBar(
-      color: Colors.black,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: <Widget>[
-          if (_isTrucoVisible || _centralButtonText != 'TRUCO !!!') 
-            _buildActionButton('CORRO ...'),
-          _buildActionButton(_centralButtonText), 
-          if (_isTrucoVisible && _centralButtonText != 'DOZE !!!')
-            _buildActionButton(_centralButtonText == 'TRUCO !!!' ? 'SEIS !!!' : _centralButtonText == 'SEIS !!!' ? 'NOVE !!!' : 'DOZE !!!'),
-        ],
+      bottomNavigationBar: BottomAppBar(
+        color: Colors.black,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: <Widget>[
+            if (_isTrucoVisible || _centralButtonText != 'TRUCO !!!')
+              _buildActionButton('CORRO ...'),
+            _buildActionButton(_centralButtonText),
+            if (_isTrucoVisible && _centralButtonText != 'DOZE !!!')
+              _buildActionButton(_centralButtonText == 'TRUCO !!!'
+                  ? 'SEIS !!!'
+                  : _centralButtonText == 'SEIS !!!'
+                      ? 'NOVE !!!'
+                      : 'DOZE !!!'),
+          ],
         ),
       ),
     );
   }
 
-Widget _buildActionButton(String text) {
-  return ElevatedButton(
-    onPressed: () => _handleButtonPress(text),
-    child: Text(text,
-        style: TextStyle(
-            color: Colors.white,
-            fontSize: 30)), 
-    style: ElevatedButton.styleFrom(
-      primary: Colors.black, 
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20), 
-        side: BorderSide(color: Colors.white), 
+  Widget _buildActionButton(String text) {
+    return ElevatedButton(
+      onPressed: () => _handleButtonPress(text),
+      child: Text(text, style: TextStyle(color: Colors.white, fontSize: 18)),
+      style: ElevatedButton.styleFrom(
+        primary: Colors.black,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(color: Colors.white),
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
 }
