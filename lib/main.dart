@@ -77,7 +77,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _playRandomNoveSound() {
-    int randomNumber = _random.nextInt(7) + 1;
+    int randomNumber = _random.nextInt(7) + 91;
     _audioPlayer
         .play(AssetSource('audios/$randomNumber.mp3'))
         .catchError((error) {
@@ -86,7 +86,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _playRandomDozeSound() {
-    int randomNumber = _random.nextInt(7) + 1;
+    int randomNumber = _random.nextInt(7) + 121;
     _audioPlayer
         .play(AssetSource('audios/$randomNumber.mp3'))
         .catchError((error) {
@@ -94,18 +94,14 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  void _playRandomCorroSound() {
-    int randomNumber = _random.nextInt(7) + 1;
-    _audioPlayer
-        .play(AssetSource('audios/$randomNumber.mp3'))
-        .catchError((error) {
-      print('Error playing random truco sound: $error');
-    });
+  void _playCorroSound() {
+    _audioPlayer.play(AssetSource('audios/z.mp3'));
   }
 
   void _handleButtonPress(String buttonPressed) {
     setState(() {
       if (buttonPressed == 'CORRO ...') {
+        _playCorroSound();
         _isTrucoVisible = false;
         _centralButtonText = 'TRUCO !!!';
       } else if (buttonPressed == 'TRUCO !!!') {
@@ -121,10 +117,21 @@ class _MyHomePageState extends State<MyHomePage> {
       } else if (buttonPressed == 'NOVE !!!' &&
           _centralButtonText == 'SEIS !!!') {
         _centralButtonText = 'NOVE !!!';
+        _playRandomNoveSound();
+      } else if (buttonPressed == 'NOVE !!!' &&
+          _centralButtonText == 'NOVE !!!') {
+        _centralButtonText = 'NOVE !!!';
+        _playRandomNoveSound();
       } else if (buttonPressed == 'DOZE !!!' &&
           _centralButtonText == 'NOVE !!!') {
         _centralButtonText = 'DOZE !!!';
         _isTrucoVisible = false;
+        _playRandomDozeSound();
+      } else if (buttonPressed == 'DOZE !!!' &&
+          _centralButtonText == 'DOZE !!!') {
+        _centralButtonText = 'DOZE !!!';
+        _isTrucoVisible = false;
+        _playRandomDozeSound();
       }
     });
   }
