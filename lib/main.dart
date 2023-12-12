@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:math';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:audioplayers/audioplayers.dart';
@@ -49,8 +50,8 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _nosCounter = 0;
   int _elesCounter = 0;
-  File? _nosImage;
-  File? _elesImage;
+  XFile? _nosImage;
+  XFile? _elesImage;
   String _centralButtonText = 'TRUCO !!!';
   bool _isTrucoVisible = false;
 
@@ -143,13 +144,18 @@ class _MyHomePageState extends State<MyHomePage> {
     if (image != null) {
       setState(() {
         if (isNos) {
-          _nosImage = File(image.path);
+          _nosImage = XFile(image.path);
         } else {
-          _elesImage = File(image.path);
+          _elesImage = XFile(image.path);
         }
       });
     }
   }
+
+  Future<Uint8List?> _loadImage(XFile? file) async {
+  if (file == null) return null;
+  return await file.readAsBytes();
+}
 
   void _incrementCounter(bool isNos) {
     setState(() {
@@ -179,7 +185,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Widget _buildTeamColumn(String teamName, int score, bool isNos) {
-    File? teamImage = isNos ? _nosImage : _elesImage;
+    XFile? teamImage = isNos ? _nosImage : _elesImage;
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
@@ -189,16 +195,40 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
         const SizedBox(height: 20),
         GestureDetector(
-          onTap: () => _pickImage(isNos),
-          child: CircleAvatar(
-            backgroundColor: Colors.grey[300],
-            backgroundImage: teamImage != null ? FileImage(teamImage) : null,
-            radius: 60,
-            child: teamImage == null
-                ? const Icon(Icons.camera_alt, size: 60, color: Colors.black)
-                : null,
-          ),
-        ),
+  onTap: () => _pickImage(isNos),
+  child: FutureBuilder<Uint8List?>(
+    future: _loadImage(teamImage),
+    builder: (BuildContext context, AsyncSnapshot<Uint8List?> snapshot) {
+      if (snapshot.connectionState == ConnectionState.waiting) {
+        return CircleAvatar(
+          backgroundColor: Colors.grey[300],
+          radius: 60,
+          child: CircularProgressIndicator(),
+        );
+      }
+      if (snapshot.hasError) {
+        return CircleAvatar(
+          backgroundColor: Colors.grey[300],
+          radius: 60,
+          child: Icon(Icons.error),
+        );
+      }
+      if (snapshot.data != null) {
+        return CircleAvatar(
+          backgroundColor: Colors.grey[300],
+          backgroundImage: MemoryImage(snapshot.data!),
+          radius: 60,
+        );
+      } else {
+        return CircleAvatar(
+          backgroundColor: Colors.grey[300],
+          radius: 60,
+          child: const Icon(Icons.camera_alt, size: 60, color: Colors.black),
+        );
+      }
+    },
+  ),
+),
         const SizedBox(height: 20),
         Container(
           width: 90,
@@ -278,6 +308,8 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
     );
   }
+
+  
 
   Widget _buildActionButton(String text) {
     return ElevatedButton(
